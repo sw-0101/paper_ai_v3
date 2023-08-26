@@ -15,7 +15,7 @@ class get_references:
         }
         params = {
             "q": query,
-            "fl": "title,reference,abstract",
+            "fl": "title,reference,abstract,author,year",  # Include 'author' and 'year'
             "rows": 1  
         }
 
@@ -25,7 +25,6 @@ class get_references:
             if response_data["docs"]:
                 data = response_data["docs"][0]
             else:
-                # Handle the case when the list is empty
                 data = None
 
             references = data.get("reference", [])
@@ -46,10 +45,15 @@ class get_references:
 
             paper_title = data.get("title", ["N/A"])[0]
             paper_abstract = data.get("abstract", "N/A")
+            paper_authors = data.get("author", [])  # Extracted authors
+            paper_year = data.get("year", "N/A")    # Extracted year
+
             result = {
                 paper_title: {
                     "references": reference_titles,
                     "abstract": paper_abstract,
+                    "authors": paper_authors,  # Added authors to the result
+                    "year": paper_year  # Added year to the result
                 }
             }
 
@@ -59,11 +63,11 @@ class get_references:
 
     def extraction(self):
         api_key = "INRAyIJJ6UyDcsyvIsP08nB8r0v4p7yXOARw9upE"  
-        #print(self.queries)
         for query in self.queries:
             result = self.search_nasa_ads(api_key, query)
             if result:
-                return result #json
+                return result
 
-# refer = get_references("Attention Is All You Need")
+# Sample usage:
+# refer = GetReferences("Attention Is All You Need")
 # print(refer.extraction())

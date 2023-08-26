@@ -21,37 +21,37 @@ class PaperImportancePredictor:
 
         return scores
 
-    def get_topk_references(self, data, topk=2):
-        title = list(data.keys())[0]
-        paper_details = data.get(title, None)
+    def get_topk_references(self, data, title, topk=2):
+        title = title
 
-        if paper_details:
-            abstract = paper_details["abstract"]
-            references = paper_details["references"]
+        if data:
+            abstract = data["abstract"]
+            references = data["references"]
             scores = self.predict_importance(title, abstract, references)
             sorted_references_scores = sorted(zip(references, scores), key=lambda x: x[1], reverse=True)
+            print(sorted_references_scores)
             topk_titles = [item[0] for item in sorted_references_scores[:topk]]
             return topk_titles
         else:
             return []
 
-# if __name__ == "__main__":
-#     predictor = PaperImportancePredictor(model_path="custom_bert_model.pth")
-#     with open("recommended_with_references.json", "r") as file:
-#         data = json.load(file)
-#     title = list(data.keys())[0]
-#     topk_titles = predictor.get_topk_references(data)
-#     #print(topk_titles)
-#     tree_dict = []
-#     for title in topk_titles:
-#         refers = get_references(title)
-#         refers_paper = refers.extraction()
-#         #print(predictor.get_topk_references(refers_paper))
-#         #tree_dict[title] = predictor.get_topk_references(refers_paper)
-#         tree_dict.append(title)
+if __name__ == "__main__":
+    predictor = PaperImportancePredictor(model_path="custom_bert_model.pth")
+    with open("recommended_with_references.json", "r") as file:
+        data = json.load(file)
+    title = list(data.keys())[0]
+    topk_titles = predictor.get_topk_references(data)
+    #print(topk_titles)
+    tree_dict = []
+    for title in topk_titles:
+        refers = get_references(title)
+        refers_paper = refers.extraction()
+        #print(predictor.get_topk_references(refers_paper))
+        #tree_dict[title] = predictor.get_topk_references(refers_paper)
+        tree_dict.append(title)
         
-#         for i in predictor.get_topk_references(refers_paper):
-#             tree_dict.append(i)
+        for i in predictor.get_topk_references(refers_paper):
+            tree_dict.append(i)
 
 
-#     print(tree_dict)
+    print(tree_dict)

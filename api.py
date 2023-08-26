@@ -15,8 +15,8 @@ from paper_reco import PaperRecommender
 from ads_api_v2 import get_references
 from inference import PaperImportancePredictor
 
-Google_SEARCH_ENGINE_ID = "a349af633f7cb4d38"
-Google_API_KEY = "AIzaSyAeScroDOok-8HcoT8r-6_mCbMJRDI4Ex0"
+Google_SEARCH_ENGINE_ID = "b526bcce895ca4251"
+Google_API_KEY = "AIzaSyD7Mno1z01mKzhX4D-UmscI227kHN9GV8M"
 
 Search_Link = ['arxiv']    
 title_page = []
@@ -76,22 +76,28 @@ def final(query, wanted_row=10):
 # recommend_papers = model.run_iterations(query)
 # print(recommend_papers)
 
-query = "Segment" #user query
+query = "segmentation" #user query
 df = final(query=query, wanted_row=10)
+print(df)
 model = PaperRecommender(df)
-recommend_papers_indices = model.run_iterations(query)
+recommend_papers_indices, sorted_scores = model.run_iterations(query)
 recommended_titles = df['Title'].iloc[recommend_papers_indices].tolist()
 recommended_links = df['Link'].iloc[recommend_papers_indices].tolist()
 
 recommended_dict = {
     "Title": recommended_titles,
-    "Link": recommended_links
+    "Link": recommended_links,
+    "Scores": [(int(t[0].item()), float(t[1].item())) for t in sorted_scores]
 }
+
+print(recommended_dict)
 refers = get_references(recommended_dict["Title"][0])
-refers_paper0 = refers.extraction()
+refers_info = refers.extraction()
+refers_paper0 = refers_info[recommended_dict["Title"][0]]
+
 predictor = PaperImportancePredictor(model_path="custom_bert_model.pth")
 
-topk_titles = predictor.get_topk_references(refers_paper0)
+topk_titles = predictor.get_topk_references(refers_paper0, recommended_dict["Title"][0])
 #print(topk_titles)
 tree_list = []
 for title in topk_titles:
@@ -99,9 +105,10 @@ for title in topk_titles:
     refers_paper = refers.extraction()
     #print(predictor.get_topk_references(refers_paper))
     tree_list.append(title)
-    for i in predictor.get_topk_references(refers_paper):
+    for i in predictor.get_topk_references(refers_paper[title]['references']):
         tree_list.append(i)
 
+print(tree_list)
 #print(tree_dict)
 
 # with open("recommended_with_references.json", "w") as outfile:

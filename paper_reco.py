@@ -22,6 +22,7 @@ class PaperRecommender:
             outputs = self.model(**inputs).last_hidden_state.mean(dim=1)
             scores = self.regression_head(outputs).squeeze()
         recommended_indices = torch.topk(scores, 5).indices
+
         return recommended_indices.cpu(), scores.cpu()
 
     def train_model(self, query, feedback):
@@ -39,6 +40,8 @@ class PaperRecommender:
     def run_iterations(self, query, num_iterations=2):
         for i in range(num_iterations):
             recommended_indices, scores = self.recommend_papers(query)
+            sorted_references_scores = sorted(zip(recommended_indices, scores), key=lambda x: x[1], reverse=True)
+
             #print("Recommended paper indices:", recommended_indices.tolist())
             #print("Scores:", scores.tolist())
             feedback_for_all_papers = [0,1,0,1,0,0,0,0,0,0]
@@ -49,7 +52,7 @@ class PaperRecommender:
         #recommendations = {"titles": recommended_titles, "links": recommended_links}
         #return recommendations
         #return recommended_titles
-        return recommended_indices
+        return recommended_indices, sorted_references_scores
     #def inference_train(self, query):
         
 
